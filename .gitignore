@@ -49,3 +49,6 @@ venv
 
 # JetBrains
 .idea
+
+# Local data
+data
