@@ -13,6 +13,7 @@
 """
 
 import unittest
+from datetime import datetime
 import logging
 
 logging.basicConfig(format='%(asctime)s %(levelname)s (%(name)s): %(message)s',
@@ -20,13 +21,27 @@ logging.basicConfig(format='%(asctime)s %(levelname)s (%(name)s): %(message)s',
 logging.getLogger('').setLevel(logging.WARN)
 logger = logging.getLogger('test_glacier_db')
 
+import glacier_db
 
-class MyTestCase(unittest.TestCase):
+class TestDatabase(unittest.TestCase):
+
     def setUp(self):
-        pass
+        self.session = glacier_db.connect_glacier_upload_log_db()
+
 
     def tearDown(self):
         pass
+
+
+    def test_add_record(self):
+        glacier_db.add_upload_record(
+            package='knb-lter-nin.1.1',
+            identiifer='2034saf0923',
+            location='https://aws/glacier/2034saf0923',
+            size='734563',
+            checksum='AB9F90234E234D',
+            timestamp=datetime.now(),
+            session=self.session)
 
 
 if __name__ == '__main__':
