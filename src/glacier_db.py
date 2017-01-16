@@ -23,7 +23,6 @@ logger = logging.getLogger('glacier_db')
 from sqlalchemy import Column, Integer, Float, String, Date, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime, timedelta
 
 Base = declarative_base()
 
@@ -40,31 +39,49 @@ class GlacierUploadLog(Base):
     timestamp = Column(DateTime, nullable=False)
 
 
-def connect_glacier_upload_log_db(db_name='glacier_upload_log.sqlite'):
-    os.chdir('../db')
-    cwd = os.getcwd()
-    db_path = cwd + '/' + db_name
-    from sqlalchemy import create_engine
-    engine = create_engine('sqlite:///' + db_path)
-    Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
+class GlacierDb(object):
 
-    return Session()
+    def __init__(self, db_name='glacier_upload_log.sqlite'):
+        os.chdir('../db')
+        cwd = os.getcwd()
+        self.db_path = cwd + '/' + db_name
 
 
-def add_upload_record(package=None, identiifer=None, location=None, size=None,
-                      checksum=None, timestamp=None, session=None):
+    def create_glacier_upload_log_db(self):
+        from sqlalchemy import create_engine
+        engine = create_engine('sqlite:///' + self.db_path)
+        Base.metadata.create_all(engine)
+        Session = sessionmaker(bind=engine)
+        self.session = Session()
 
-    record = GlacierUploadLog(
-        package = package,
-        identifier = identiifer,
-        location = location,
-        size = size,
-        checksum = checksum,
-        timestamp = timestamp)
 
-    session.add(record)
-    session.commit()
+    def delete_glacier_upload_log_db(self):
+        os.remove(self.db_path)
+
+
+    def add_upload_record(self, package=None, identifer=None, location=None,
+                          size=None, checksum=None, timestamp=None):
+
+        record = GlacierUploadLog(
+            package = package,
+            identifier = identifer,
+            location = location,
+            size = size,
+            checksum = checksum,
+            timestamp = timestamp)
+
+        self.session.add(record)
+        self.session.commit()
+
+
+    def package_exists(self, package=None):
+        record = self.session.query(GlacierUploadLog).filter(
+            GlacierUploadLog.package == package).one_or_none()
+
+        if record:
+            return True
+        else:
+            return False
 
 
 def main():
