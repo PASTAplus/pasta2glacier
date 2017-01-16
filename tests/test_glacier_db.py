@@ -26,7 +26,8 @@ import glacier_db
 class TestDatabase(unittest.TestCase):
 
     def setUp(self):
-        self.session = glacier_db.connect_glacier_upload_log_db()
+        self.session = glacier_db.connect_glacier_upload_log_db(
+            'glacier_upload_log_test.sqlite')
 
 
     def tearDown(self):
