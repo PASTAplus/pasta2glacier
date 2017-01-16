@@ -15,18 +15,27 @@
 import unittest
 import logging
 
+import pasta2glacier
+
 logging.basicConfig(format='%(asctime)s %(levelname)s (%(name)s): %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S%z')
 logging.getLogger('').setLevel(logging.WARN)
 logger = logging.getLogger('test_pasta2glacier')
 
 
-class MyTestCase(unittest.TestCase):
+class TestGetDataDirectories(unittest.TestCase):
+
+
     def setUp(self):
         pass
 
     def tearDown(self):
         pass
+
+    def test_directory_listing(self):
+        path = '../data'
+        dirnames = pasta2glacier.getDataDirectories(path=path)
+        self.assertIsNotNone(dirnames)
 
 
 if __name__ == '__main__':
