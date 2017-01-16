@@ -40,11 +40,12 @@ class GlacierUploadLog(Base):
     timestamp = Column(DateTime, nullable=False)
 
 
-def connect_glacier_upload_log_db():
+def connect_glacier_upload_log_db(db_name='glacier_upload_log.sqlite'):
     os.chdir('../db')
     cwd = os.getcwd()
+    db_path = cwd + '/' + db_name
     from sqlalchemy import create_engine
-    engine = create_engine('sqlite:///' + cwd + '/glacier_upload_log.sqlite')
+    engine = create_engine('sqlite:///' + db_path)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
 
