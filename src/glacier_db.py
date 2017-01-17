@@ -46,18 +46,15 @@ class GlacierDb(object):
         cwd = os.getcwd()
         self.db_path = cwd + '/' + db_name
 
-
-    def create_glacier_upload_log_db(self):
+    def connect_glacier_upload_log_db(self):
         from sqlalchemy import create_engine
         engine = create_engine('sqlite:///' + self.db_path)
         Base.metadata.create_all(engine)
         Session = sessionmaker(bind=engine)
         self.session = Session()
 
-
     def delete_glacier_upload_log_db(self):
         os.remove(self.db_path)
-
 
     def add_upload_record(self, package=None, identifer=None, location=None,
                           size=None, checksum=None, timestamp=None):
@@ -73,11 +70,9 @@ class GlacierDb(object):
         self.session.add(record)
         self.session.commit()
 
-
     def package_exists(self, package=None):
         record = self.session.query(GlacierUploadLog).filter(
             GlacierUploadLog.package == package).one_or_none()
-
         if record:
             return True
         else:
