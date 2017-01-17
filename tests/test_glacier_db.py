@@ -24,12 +24,13 @@ logger = logging.getLogger('test_glacier_db')
 
 from glacier_db import GlacierDb
 
+
 class TestDatabase(unittest.TestCase):
 
     def setUp(self):
         db_name = 'glacier_upload_log_test.sqlite'
         self.gdb = GlacierDb(db_name)
-        self.gdb.create_glacier_upload_log_db()
+        self.gdb.connect_glacier_upload_log_db()
 
 
     def tearDown(self):
