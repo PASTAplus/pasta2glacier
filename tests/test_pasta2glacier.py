@@ -25,7 +25,6 @@ logger = logging.getLogger('test_pasta2glacier')
 
 class TestGetDataDirectories(unittest.TestCase):
 
-
     def setUp(self):
         pass
 
@@ -33,9 +32,9 @@ class TestGetDataDirectories(unittest.TestCase):
         pass
 
     def test_directory_listing(self):
-        path = '../data'
-        dirnames = pasta2glacier.getDataDirectories(path=path)
-        self.assertIsNotNone(dirnames)
+        data_path = '../data'
+        dir_names = pasta2glacier.getDataDirectories(path=data_path)
+        self.assertIsNotNone(dir_names)
 
 
 if __name__ == '__main__':
