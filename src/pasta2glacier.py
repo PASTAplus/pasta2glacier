@@ -22,6 +22,7 @@ logging.getLogger('').setLevel(logging.WARN)
 logger = logging.getLogger('pasta2glacier')
 
 from glacier_db import GlacierDb
+from glacier import Glacier
 
 
 def getDataDirectories(path=None):
@@ -38,14 +39,27 @@ def main():
     gdb = GlacierDb()
     gdb.connect_glacier_upload_log_db()
 
+
     for dir_name in getDataDirectories(data_path):
         if not gdb.package_exists(dir_name):
-            shutil.make_archive(base_name=archive_path + '/' + dir_name,
-                                format='gztar', base_dir=dir_name,
-                                root_dir=data_path)
-            # TODO: perform Glacier multi-part upload here
+            archive = shutil.make_archive(base_name=archive_path + '/' +
+                                                    dir_name,
+                                          format='gztar', base_dir=dir_name,
+                                          root_dir=data_path)
+
+            archive_description = 'This archive ({dir_name}) is a data ' \
+                                  'package derived from the PASTA ecological ' \
+                                  'and environmental data repository. Unless ' \
+                                  'stated otherwise, all contents of this ' \
+                                  'data package are licensed under Creative ' \
+                                  'Commons CC-0.'.format(dir_name=dir_name)
+
+            g = Glacier(vault_name='PASTA_Test')
+            response = g.do_multipart_upload(archive=archive,
+                                        archive_description=archive_description)
+            print(response)
             # TODO: register upload in glacier_db
-            os.remove(archive_path + '/' + dir_name + '.tar.gz')
+            os.remove(archive)
 
     return 0
 
