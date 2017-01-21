@@ -40,17 +40,17 @@ class TestDatabase(unittest.TestCase):
     def test_add_records(self):
         self.gdb.add_upload_record(
             package='knb-lter-nin.1.1',
-            identifer='2034saf0923',
+            identifier='2034saf0923',
             location='https://aws/glacier/2034saf0923',
-            size='734563',
+            size=734563,
             checksum='AB9F90234E234D',
             timestamp=datetime.now())
 
         self.gdb.add_upload_record(
             package='knb-lter-nin.2.1',
-            identifer='823lkas09234',
+            identifier='823lkas09234',
             location='https://aws/glacier/823lkas09234',
-            size='89234',
+            size=89234,
             checksum='3243A12FD23',
             timestamp=datetime.now())
 
@@ -58,16 +58,16 @@ class TestDatabase(unittest.TestCase):
     def test_record_collision(self):
         self.gdb.add_upload_record(
             package='knb-lter-nin.1.1',
-            identifer='2034saf0923',
+            identifier='2034saf0923',
             location='https://aws/glacier/2034saf0923',
-            size='734563',
+            size=734563,
             checksum='AB9F90234E234D',
             timestamp=datetime.now())
 
         self.assertRaises(IntegrityError,
                           self.gdb.add_upload_record,
                           package='knb-lter-nin.1.1',
-                          identifer='2034saf0923',
+                          identifier='2034saf0923',
                           location='https://aws/glacier/2034saf0923',
                           size='734563',
                           checksum='AB9F90234E234D',
@@ -77,25 +77,25 @@ class TestDatabase(unittest.TestCase):
     def test_package_exists(self):
         self.gdb.add_upload_record(
             package='knb-lter-nin.1.1',
-            identifer='2034saf0923',
+            identifier='2034saf0923',
             location='https://aws/glacier/2034saf0923',
-            size='734563',
+            size=734563,
             checksum='AB9F90234E234D',
             timestamp=datetime.now())
 
         self.gdb.add_upload_record(
             package='knb-lter-nin.2.1',
-            identifer='823lkas09234',
+            identifier='823lkas09234',
             location='https://aws/glacier/823lkas09234',
-            size='89234',
+            size=89234,
             checksum='3243A12FD23',
             timestamp=datetime.now())
 
         self.gdb.add_upload_record(
             package='knb-lter-nin.3.1',
-            identifer='ljd92ls2klj',
+            identifier='ljd92ls2klj',
             location='https://aws/glacier/ljd92ls2klj',
-            size='92348',
+            size=92348,
             checksum='345B03E223F',
             timestamp=datetime.now())
 
