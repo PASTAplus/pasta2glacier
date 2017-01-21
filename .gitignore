@@ -54,3 +54,4 @@ venv
 data
 db
 archive
+*.log
