@@ -14,11 +14,8 @@
 
 import os
 import logging
-
-logging.basicConfig(format='%(asctime)s %(levelname)s (%(name)s): %(message)s',
-                    datefmt='%Y-%m-%d% H:%M:%S%z')
-logging.getLogger('').setLevel(logging.WARN)
 logger = logging.getLogger('glacier_db')
+
 
 from sqlalchemy import Column, Integer, Float, String, Date, DateTime
 from sqlalchemy.ext.declarative import declarative_base
@@ -34,7 +31,7 @@ class GlacierUploadLog(Base):
     package = Column(String, primary_key=True)
     identifier = Column(String, nullable=False)
     location = Column(String, nullable=False)
-    size = Column(String, nullable=False)
+    size = Column(Integer, nullable=False)
     checksum = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False)
 
@@ -56,12 +53,12 @@ class GlacierDb(object):
     def delete_glacier_upload_log_db(self):
         os.remove(self.db_path)
 
-    def add_upload_record(self, package=None, identifer=None, location=None,
+    def add_upload_record(self, package=None, identifier=None, location=None,
                           size=None, checksum=None, timestamp=None):
 
         record = GlacierUploadLog(
             package = package,
-            identifier = identifer,
+            identifier = identifier,
             location = location,
             size = size,
             checksum = checksum,
