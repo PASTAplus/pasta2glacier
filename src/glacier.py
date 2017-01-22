@@ -4,6 +4,7 @@
 """:Mod: glacier
 
 :Synopsis:
+    A class to manage interactions with the AWS Glacier data storage.
 
 :Author:
     servilla
@@ -13,10 +14,12 @@
 """
 
 import logging
-logger = logging.getLogger('glacier')
 
 import boto3
 from botocore import utils
+
+
+logger = logging.getLogger('glacier')
 
 
 class Glacier(object):
@@ -28,6 +31,10 @@ class Glacier(object):
 
     def do_multipart_upload(self, archive=None, archive_description='',
                             part_size='4194304'):
+
+        msg = 'Beginning multipart upload of {archive} with part size {part_size}'.format(
+            archive=archive, part_size=part_size)
+        logger.info(msg)
 
         response = self.client.initiate_multipart_upload(
             vaultName=self.vault_name,
@@ -46,6 +53,9 @@ class Glacier(object):
                     bytes = len(block)
                     range = 'bytes ' + str(range_start) + '-' + \
                             str(range_start + bytes - 1) + '/*'
+
+                    msg = 'Part upload: {range}'.format(range=range)
+                    logger.info(msg)
 
                     self.client.upload_multipart_part(
                         vaultName=self.vault_name,
@@ -67,12 +77,16 @@ class Glacier(object):
         except:
             self.client.abort_multipart_upload(vaultName=self.vault_name,
                                                uploadId=upload_id)
-            err_msg = 'Failed to upload archive: {archive}'.format(
+            err_msg = 'Failed to upload multipart archive: {archive}'.format(
                 archive=archive)
-            raise MultipartUploadError(err_msg)
+            logger.error(err_msg)
+            raise GlacierUploadError(err_msg)
 
 
     def do_upload(self, archive=None, archive_description=''):
+
+        msg = 'Beginning single upload of {archive}'.format(archive=archive)
+        logger.info(msg)
 
         try:
             f = open(archive, 'rb')
@@ -83,24 +97,16 @@ class Glacier(object):
             f.close()
             return upload_response
         except:
-            err_msg = 'Failed to upload archive: {archive}'.format(
+            err_msg = 'Failed to upload single archive: {archive}'.format(
                 archive=archive)
-            raise UploadError(err_msg)
+            logger.error(err_msg)
+            raise GlacierUploadError(err_msg)
 
 
-class MultipartUploadError(Exception):
-
-    def __init__(self,*args,**kwargs):
-        Exception.__init__(self,*args,**kwargs)
-
-
-
-class UploadError(Exception):
+class GlacierUploadError(Exception):
 
     def __init__(self,*args,**kwargs):
         Exception.__init__(self,*args,**kwargs)
-
-
 
 
 def main():
