@@ -4,7 +4,8 @@
 """:Mod: glacier_db
 
 :Synopsis:
-
+    A class to manage and store log information from successful archive uploads
+    from PASTA to the AWS Glacier data storage.
 :Author:
     servilla
   
@@ -14,14 +15,14 @@
 
 import os
 import logging
-logger = logging.getLogger('glacier_db')
-
 
 from sqlalchemy import Column, Integer, Float, String, Date, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+
 Base = declarative_base()
+logger = logging.getLogger('glacier_db')
 
 
 class GlacierUploadLog(Base):
