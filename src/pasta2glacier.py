@@ -4,7 +4,8 @@
 """:Mod: pasta2glacier
 
 :Synopsis:
-    To add PASTA data packages to the Amazon AWS Glacier storage.
+    The main workflow loop to archive PASTA data packages to the Amazon AWS
+    Glacier data storage.
 
 :Author:
     servilla
@@ -17,13 +18,15 @@ import shutil
 from datetime import datetime
 import logging
 
-logging.basicConfig(format='%(asctime)s %(levelname)s (%(name)s): %(message)s',
-                    datefmt='%Y-%m-%d% H:%M:%S%z', filename='../p2g.log',
-                    level=logging.INFO)
-logger = logging.getLogger('pasta2glacier')
-
 from glacier_db import GlacierDb
 from glacier import Glacier
+
+
+logging.basicConfig(format='%(asctime)s %(levelname)s (%(name)s): %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S%z', filename='../p2g.log',
+                    level=logging.INFO)
+
+logger = logging.getLogger('pasta2glacier')
 
 
 def getDataDirectories(path=None):
@@ -54,12 +57,7 @@ def main():
             logger.info('Create archive: {archive}'.format(archive=archive))
             archive_size = os.path.getsize(archive)
 
-            archive_description = 'This archive ({dir_name}) is a data ' \
-                                  'package derived from the PASTA ecological ' \
-                                  'and environmental data repository. Unless ' \
-                                  'stated otherwise, all contents of this ' \
-                                  'data package are licensed under Creative ' \
-                                  'Commons CC-0.'.format(dir_name=dir_name)
+            archive_description = '{dir_name}'.format(dir_name=dir_name)
 
             glacier = Glacier(vault_name='PASTA_Test')
 
