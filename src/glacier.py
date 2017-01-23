@@ -30,7 +30,7 @@ class Glacier(object):
 
 
     def do_multipart_upload(self, archive=None, archive_description='',
-                            part_size='4194304'):
+                            part_size=4194304):
 
         msg = 'Beginning multipart upload of {archive} with part size {part_size}'.format(
             archive=archive, part_size=part_size)
@@ -39,18 +39,17 @@ class Glacier(object):
         response = self.client.initiate_multipart_upload(
             vaultName=self.vault_name,
             archiveDescription=archive_description,
-            partSize=part_size)
+            partSize=str(part_size))
         location = response['location']
         upload_id = response['uploadId']
 
-        block_size = (1024 ** 2) * 4  # 4MB
         range_start = 0
 
         try:
             with open(archive, 'rb') as f:
-                block = f.read(block_size)
-                while block:
-                    bytes = len(block)
+                part = f.read(part_size)
+                while part:
+                    bytes = len(part)
                     range = 'bytes ' + str(range_start) + '-' + \
                             str(range_start + bytes - 1) + '/*'
 
@@ -61,10 +60,10 @@ class Glacier(object):
                         vaultName=self.vault_name,
                         uploadId=upload_id,
                         range=range,
-                        body=block)
+                        body=part)
 
                     range_start = range_start + bytes
-                    block = f.read(block_size)
+                    part = f.read(part_size)
 
                 f.close()
                 archive_size = str(range_start)
