@@ -1,0 +1,6 @@
+# Required
+boto3
+sqlalchemy
+
+# Optional
+awscli
