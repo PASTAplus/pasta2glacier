@@ -20,6 +20,7 @@ import logging
 
 from glacier_db import GlacierDb
 from glacier import Glacier
+from glacier import GlacierUploadError
 
 
 logging.basicConfig(format='%(asctime)s %(levelname)s (%(name)s): %(message)s',
@@ -61,21 +62,25 @@ def main():
 
             glacier = Glacier(vault_name='PASTA_Test')
 
-            if (archive_size < multipart_threshold):
-                response = glacier.do_upload(archive=archive,
-                                        archive_description=archive_description)
-            else:
-                response = glacier.do_multipart_upload(archive=archive,
-                                        archive_description=archive_description)
+            try:
 
-            logger.info('Response: {response}'.format(response=response))
+                if (archive_size < multipart_threshold):
+                    response = glacier.do_upload(archive=archive,
+                                            archive_description=archive_description)
+                else:
+                    response = glacier.do_multipart_upload(archive=archive,
+                                            archive_description=archive_description)
 
-            gdb.add_upload_record(package=dir_name,
-                                  identifier=response['archiveId'],
-                                  location=response['location'],
-                                  size=archive_size,
-                                  checksum=response['checksum'],
-                                  timestamp=datetime.now())
+                logger.info('Response: {response}'.format(response=response))
+
+                gdb.add_upload_record(package=dir_name,
+                                      identifier=response['archiveId'],
+                                      location=response['location'],
+                                      size=archive_size,
+                                      checksum=response['checksum'],
+                                      timestamp=datetime.now())
+            except GlacierUploadError as e:
+                logger.error(e)
 
             os.remove(archive)
 
