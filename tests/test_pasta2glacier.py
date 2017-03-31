@@ -33,7 +33,7 @@ class TestGetDataDirectories(unittest.TestCase):
 
     def test_directory_listing(self):
         data_path = '../data'
-        dir_names = pasta2glacier.getDataDirectories(path=data_path)
+        dir_names = pasta2glacier.data_directories(path=data_path)
         self.assertIsNotNone(dir_names)
 
 
