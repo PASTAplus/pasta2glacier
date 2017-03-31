@@ -25,7 +25,8 @@ from docopt import docopt
 
 from glacier_db import GlacierDb
 from glacier import Glacier
-from glacier import GlacierUploadError
+
+from lock import Lock
 
 logging.basicConfig(format='%(asctime)s %(levelname)s (%(name)s): %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S%z', filename='p2g.log',
@@ -35,7 +36,6 @@ logger = logging.getLogger('pasta2glacier')
 
 
 def data_directories(path=None):
-
     if path and os.path.isdir(path):
         return os.listdir(path)
     else:
@@ -45,9 +45,12 @@ def data_directories(path=None):
 
 def mock_response():
     r = {}
-    r['archiveId'] = '2bf5l58c52IXU67qovKRk49Np5vYACZELD4rhWOL86kIi3-ncU-WM-v7hG8l9TuTiT12xmiloa67WsMUGdrxOKVejKdFYA5F7Ksmdlifq_gARt6a7rwR5oFDl5jyH3ACjGh8P83eBg'
-    r['location'] = '/321492031925/vaults/PASTA_Test/archives/2bf5l58c52IXU67qovKRk49Np5vYACZELD4rhWOL86kIi3-ncU-WM-v7hG8l9TuTiT12xmiloa67WsMUGdrxOKVejKdFYA5F7Ksmdlifq_gARt6a7rwR5oFDl5jyH3ACjGh8P83eBg'
-    r['checksum'] = '226cb0468dcda728f80bd5807e6483cbbb191b5f9e7cb0b61fd51c11acb30d01'
+    r[
+        'archiveId'] = '2bf5l58c52IXU67qovKRk49Np5vYACZELD4rhWOL86kIi3-ncU-WM-v7hG8l9TuTiT12xmiloa67WsMUGdrxOKVejKdFYA5F7Ksmdlifq_gARt6a7rwR5oFDl5jyH3ACjGh8P83eBg'
+    r[
+        'location'] = '/321492031925/vaults/PASTA_Test/archives/2bf5l58c52IXU67qovKRk49Np5vYACZELD4rhWOL86kIi3-ncU-WM-v7hG8l9TuTiT12xmiloa67WsMUGdrxOKVejKdFYA5F7Ksmdlifq_gARt6a7rwR5oFDl5jyH3ACjGh8P83eBg'
+    r[
+        'checksum'] = '226cb0468dcda728f80bd5807e6483cbbb191b5f9e7cb0b61fd51c11acb30d01'
     return r
 
 
@@ -57,11 +60,12 @@ def main(argv):
     packages from the PASTA data repository into Amazon's AWS Glacier storage.
 
     Usage:
-        pasta2glacier.py <vault> [-d | --dry] 
+        pasta2glacier.py <vault> <data_path> [-d | --dry] 
         pasta2glacier.py (-h | --help)
         
     Arguments:
         vault       The AWS Glacier vault to be used (e.g. "PASTA_Test")
+        data_path   The file system path to the local data directory
 
     Options:
       -h --help     This page
@@ -72,30 +76,25 @@ def main(argv):
     args = docopt(str(main.__doc__))
     DRY_RUN = args['--dry']
     vault = args['<vault>']
+    data_path = args['<data_path>']
 
-    data_path = '../data'
-    archive_path = '../archive'
     multipart_threshold = (1024 ** 2) * 4  # 4MB
+
+    lock = Lock()
+    if lock.locked:
+        logger.error('Lock file {} exists, exiting...'.format(lock.lock_file))
+        return 1
+    else:
+        lock.acquire()
 
     gdb = GlacierDb('glacier_upload_log.sqlite')
     gdb.connect_glacier_upload_log_db()
 
-    glacier = None
-
-    if not DRY_RUN:
-        try:
-            glacier = Glacier(vault_name=vault)
-        except Boto3Error as e:
-            logger.error(e)
-            return -1
-
     for dir_name in data_directories(data_path):
         logger.info('Directory: {dir_name}'.format(dir_name=dir_name))
         if not gdb.package_exists(dir_name):
-            archive = shutil.make_archive(base_name=archive_path + '/' +
-                                                    dir_name,
-                                          format='gztar', base_dir=dir_name,
-                                          root_dir=data_path)
+            archive = shutil.make_archive(base_name=dir_name, format='gztar',
+                                          base_dir=dir_name, root_dir=data_path)
             logger.info('Create archive: {archive}'.format(archive=archive))
             archive_size = os.path.getsize(archive)
 
@@ -106,14 +105,16 @@ def main(argv):
             else:
                 try:
 
+                    glacier = Glacier(vault_name=vault)
+
                     if (archive_size < multipart_threshold):
                         response = glacier.do_upload(archive=archive,
-                                                archive_description=archive_description)
+                                                     archive_description=archive_description)
                     else:
                         response = glacier.do_multipart_upload(archive=archive,
-                                                archive_description=archive_description)
+                                                               archive_description=archive_description)
 
-                except GlacierUploadError as e:
+                except Boto3Error as e:
                     logger.error(e)
                     return -1
 
@@ -127,6 +128,7 @@ def main(argv):
                                   timestamp=datetime.now())
             os.remove(archive)
 
+    lock.release()
     return 0
 
 
