@@ -17,6 +17,7 @@ import logging
 
 import boto3
 from botocore import utils
+from boto3.exceptions import Boto3Error
 
 
 logger = logging.getLogger('glacier')
@@ -73,7 +74,8 @@ class Glacier(object):
                 archiveSize=archive_size,
                 checksum=utils.calculate_tree_hash(open(archive, 'rb')))
             return upload_response
-        except:
+        except Boto3Error as e:
+            logger.error(e)
             self.client.abort_multipart_upload(vaultName=self.vault_name,
                                                uploadId=upload_id)
             err_msg = 'Failed to upload multipart archive: {archive}'.format(
@@ -95,7 +97,8 @@ class Glacier(object):
                 archiveDescription=archive_description, body=block)
             f.close()
             return upload_response
-        except:
+        except Boto3Error as e:
+            logger.error(e)
             err_msg = 'Failed to upload single archive: {archive}'.format(
                 archive=archive)
             logger.error(err_msg)
@@ -103,9 +106,7 @@ class Glacier(object):
 
 
 class GlacierUploadError(Exception):
-
-    def __init__(self,*args,**kwargs):
-        Exception.__init__(self,*args,**kwargs)
+    pass
 
 
 def main():
