@@ -81,7 +81,7 @@ class Glacier(object):
             err_msg = 'Failed to upload multipart archive: {archive}'.format(
                 archive=archive)
             logger.error(err_msg)
-            raise GlacierUploadError(err_msg)
+            raise e
 
 
     def do_upload(self, archive=None, archive_description=''):
@@ -102,11 +102,7 @@ class Glacier(object):
             err_msg = 'Failed to upload single archive: {archive}'.format(
                 archive=archive)
             logger.error(err_msg)
-            raise GlacierUploadError(err_msg)
-
-
-class GlacierUploadError(Exception):
-    pass
+            raise e
 
 
 def main():
