@@ -10,12 +10,16 @@ Glacier. A registry of completed archives retains a history of events to
 prevent attempts to archive data packages that had previously been uploaded to
 Glacier.
 
+    pasta2glacier provides a mechanism to upload archived (zip or tar) data
+    packages from the PASTA data repository into Amazon's AWS Glacier storage.
+
     Usage:
-        pasta2glacier.py <vault> [-d | --dry] 
+        pasta2glacier.py <vault> <data_path> [-d | --dry] 
         pasta2glacier.py (-h | --help)
         
     Arguments:
         vault       The AWS Glacier vault to be used (e.g. "PASTA_Test")
+        data_path   The file system path to the local data directory
 
     Options:
       -h --help     This page
