@@ -26,7 +26,9 @@ class Lock(object):
     def __init__(self, file_name=None):
 
         if file_name is None:
-            self._file_name = '/tmp/glacier.lock'
+            random_str = lambda n: ''.join([random.choice(
+                string.ascii_letters) for i in range(n)])
+            self._file_name = random_str(10) + ".lock"
         else:
             self._file_name = file_name
 

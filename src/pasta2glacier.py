@@ -80,7 +80,7 @@ def main(argv):
 
     multipart_threshold = (1024 ** 2) * 4  # 4MB
 
-    lock = Lock()
+    lock = Lock('/tmp/glacier.lock')
     if lock.locked:
         logger.error('Lock file {} exists, exiting...'.format(lock.lock_file))
         return 1

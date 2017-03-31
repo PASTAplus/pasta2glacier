@@ -28,7 +28,7 @@ from lock import Lock
 class TestLock(unittest.TestCase):
 
     def setUp(self):
-        self.lock = Lock()
+        self.lock = Lock('bozo.lock')
 
     def tearDown(self):
         try:
