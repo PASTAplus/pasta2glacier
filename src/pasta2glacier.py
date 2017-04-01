@@ -86,6 +86,7 @@ def main(argv):
         return 1
     else:
         lock.acquire()
+        logger.info('Lock file {} acquired'.format(lock.lock_file))
 
     gdb = GlacierDb('glacier_upload_log.sqlite')
     gdb.connect_glacier_upload_log_db()
@@ -129,6 +130,7 @@ def main(argv):
             os.remove(archive)
 
     lock.release()
+    logger.info('Lock file {} released'.format(lock.lock_file))
     return 0
 
 
