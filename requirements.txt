@@ -1,6 +1,7 @@
 # Required
 boto3
 sqlalchemy
+docopt
 
 # Optional
 awscli
