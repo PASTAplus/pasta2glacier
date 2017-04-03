@@ -78,7 +78,7 @@ def main(argv):
     vault = args['<vault>']
     data_path = args['<data_path>']
 
-    multipart_threshold = (1024 ** 2) * 4  # 4MB
+    multipart_threshold = (1024 ** 2) * 99  #99MB
 
     lock = Lock('/tmp/glacier.lock')
     if lock.locked:
