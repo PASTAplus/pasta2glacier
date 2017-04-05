@@ -60,7 +60,7 @@ def main(argv):
     packages from the PASTA data repository into Amazon's AWS Glacier storage.
 
     Usage:
-        pasta2glacier.py <vault> <data_path> [-d | --dry] 
+        pasta2glacier.py <vault> <data_path> [-d | --dry] [-l | --limit <n>]
         pasta2glacier.py (-h | --help)
         
     Arguments:
@@ -68,8 +68,9 @@ def main(argv):
         data_path   The file system path to the local data directory
 
     Options:
-      -h --help     This page
-      -d --dry      Dry run only - no AWS Glacier upload
+        -h --help         This page
+        -d --dry          Dry run only - no AWS Glacier upload
+        -l --limit <n>    Limit upload to 'n' archives
         
     """
 
@@ -77,6 +78,11 @@ def main(argv):
     DRY_RUN = args['--dry']
     vault = args['<vault>']
     data_path = args['<data_path>']
+
+    if len(args['--limit']) == 1:
+        limit = int(args['--limit'][0])
+    else:
+        limit = None
 
     multipart_threshold = (1024 ** 2) * 99  #99MB
 
@@ -92,6 +98,13 @@ def main(argv):
     gdb.connect_glacier_upload_log_db()
 
     for dir_name in data_directories(data_path):
+
+        if limit is not None:
+            if limit > 0:
+                limit -= 1
+            else:
+                break
+
         logger.info('Directory: {dir_name}'.format(dir_name=dir_name))
         if not gdb.package_exists(dir_name):
             archive = shutil.make_archive(base_name=dir_name, format='gztar',
