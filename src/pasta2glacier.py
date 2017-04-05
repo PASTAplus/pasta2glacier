@@ -123,10 +123,11 @@ def main(argv):
 
                     if (archive_size < multipart_threshold):
                         response = glacier.do_upload(archive=archive,
-                                                     archive_description=archive_description)
+                                        archive_description=archive_description)
                     else:
                         response = glacier.do_multipart_upload(archive=archive,
-                                                               archive_description=archive_description)
+                                        archive_description=archive_description,
+                                                  part_size=multipart_threshold)
 
                 except Boto3Error as e:
                     logger.error(e)
