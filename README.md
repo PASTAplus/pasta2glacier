@@ -35,7 +35,7 @@ The main module for execution is "pasta2glacier". Command line usage follows:
     packages from the PASTA data repository into Amazon's AWS Glacier storage.
 
     Usage:
-        pasta2glacier.py <vault> <data_path> [-d | --dry] 
+        pasta2glacier.py <vault> <data_path> [-d | --dry] [-l | --limit <n>]
         pasta2glacier.py (-h | --help)
         
     Arguments:
@@ -43,5 +43,6 @@ The main module for execution is "pasta2glacier". Command line usage follows:
         data_path   The file system path to the local data directory
 
     Options:
-      -h --help     This page
-      -d --dry      Dry run only - no AWS Glacier upload
+        -h --help         This page
+        -d --dry          Dry run only - no AWS Glacier upload
+        -l --limit <n>    Limit upload to 'n' archives
