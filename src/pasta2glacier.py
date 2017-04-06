@@ -85,7 +85,7 @@ def main(argv):
         limit = None
 
     multipart_threshold = (1024 ** 2) * 99  #99MB
-    part_size = (1024**2) * (2**7)
+    part_size = (1024**2) * (2**5)
 
     lock = Lock('/tmp/glacier.lock')
     if lock.locked:
@@ -98,16 +98,21 @@ def main(argv):
     gdb = GlacierDb('glacier_upload_log.sqlite')
     gdb.connect_glacier_upload_log_db()
 
+    dirs = len(data_directories(data_path))
+    cnt = 1
     for dir_name in data_directories(data_path):
 
-        if limit is not None:
-            if limit > 0:
-                limit -= 1
-            else:
-                break
-
-        logger.info('Directory: {dir_name}'.format(dir_name=dir_name))
+        logger.info('Directory {cnt} of {dirs}: {dir_name}'.format(cnt=cnt,
+                     dirs=dirs, dir_name=dir_name))
+        cnt += 1
         if not gdb.package_exists(dir_name):
+
+            if limit is not None:
+                if limit > 0:
+                    limit -= 1
+                else:
+                    break
+
             archive = shutil.make_archive(base_name=dir_name, format='gztar',
                                           base_dir=dir_name, root_dir=data_path)
             logger.info('Create archive: {archive}'.format(archive=archive))
@@ -143,6 +148,9 @@ def main(argv):
                                   checksum=response['checksum'],
                                   timestamp=datetime.now())
             os.remove(archive)
+
+        else:
+            logger.info('Skipping directory {}'.format(dir_name))
 
     lock.release()
     logger.info('Lock file {} released'.format(lock.lock_file))
