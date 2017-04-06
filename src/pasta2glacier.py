@@ -85,7 +85,7 @@ def main(argv):
         limit = None
 
     multipart_threshold = (1024 ** 2) * 99  #99MB
-    part_size = (1024**2) * (2**5)
+    part_size = (1024**2) * (2**4)
 
     lock = Lock('/tmp/glacier.lock')
     if lock.locked:
@@ -135,7 +135,7 @@ def main(argv):
                                         archive_description=archive_description,
                                                   part_size=part_size)
 
-                except Boto3Error as e:
+                except Exception as e:
                     logger.error(e)
                     return -1
 
