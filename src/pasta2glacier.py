@@ -120,13 +120,9 @@ def main(argv):
 
             archive_description = '{dir_name}'.format(dir_name=dir_name)
 
-            if DRY_RUN:
-                response = mock_response()
-            else:
+            if not DRY_RUN:
                 try:
-
                     glacier = Glacier(vault_name=vault)
-
                     if (archive_size < multipart_threshold):
                         response = glacier.do_upload(archive=archive,
                                         archive_description=archive_description)
@@ -134,24 +130,19 @@ def main(argv):
                         response = glacier.do_multipart_upload(archive=archive,
                                         archive_description=archive_description,
                                                   part_size=part_size)
-
+                    logger.info('Response: {response}'.format(response=response))
+                    gdb.add_upload_record(package=dir_name,
+                                          identifier=response['archiveId'],
+                                          location=response['location'],
+                                          size=archive_size,
+                                          checksum=response['checksum'],
+                                          timestamp=datetime.now())
                 except Exception as e:
                     logger.error(e)
-                    return -1
-
-            logger.info('Response: {response}'.format(response=response))
-
-            gdb.add_upload_record(package=dir_name,
-                                  identifier=response['archiveId'],
-                                  location=response['location'],
-                                  size=archive_size,
-                                  checksum=response['checksum'],
-                                  timestamp=datetime.now())
-            os.remove(archive)
-
+                finally:
+                    os.remove(archive)
         else:
             logger.info('Skipping directory {}'.format(dir_name))
-
     lock.release()
     logger.info('Lock file {} released'.format(lock.lock_file))
     return 0
