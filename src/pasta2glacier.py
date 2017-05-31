@@ -100,7 +100,7 @@ def main(argv):
     cnt = 1
     for dir_name in data_directories(data_path):
 
-        logger.info('Directory {cnt} of {dirs}: {dir_name}'.format(cnt=cnt,
+        logger.debug('Directory {cnt} of {dirs}: {dir_name}'.format(cnt=cnt,
                      dirs=dirs, dir_name=dir_name))
         cnt += 1
         if not gdb.package_exists(dir_name):
