@@ -37,7 +37,6 @@ daiquiri.setup(level=logging.INFO,
 logger = daiquiri.getLogger('pasta2glacier.py: ' + __name__)
 
 
-
 def data_directories(path=None):
     if path and os.path.isdir(path):
         return os.listdir(path)
@@ -113,34 +112,39 @@ def main(argv):
                 else:
                     break
 
-            archive = shutil.make_archive(base_name=dir_name, format='gztar',
-                                          base_dir=dir_name, root_dir=data_path)
-            logger.info('Create archive: {archive}'.format(archive=archive))
-            archive_size = os.path.getsize(archive)
+            logger.info(f'Create archive: {dir_name}.tar.gz')
 
-            archive_description = '{dir_name}'.format(dir_name=dir_name)
+            try:
+                os.chdir('/home/servilla/tmp')
+                archive = shutil.make_archive(base_name=dir_name, format='gztar',
+                                              base_dir=dir_name, root_dir=data_path)
+                archive_size = os.path.getsize(archive)
+                archive_description = f'{dir_name}'
 
-            if not DRY_RUN:
-                try:
-                    glacier = Glacier(vault_name=vault)
-                    if (archive_size < multipart_threshold):
-                        response = glacier.do_upload(archive=archive,
-                                        archive_description=archive_description)
-                    else:
-                        response = glacier.do_multipart_upload(archive=archive,
-                                        archive_description=archive_description,
-                                                  part_size=part_size)
-                    logger.info('Response: {response}'.format(response=response))
-                    gdb.add_upload_record(package=dir_name,
-                                          identifier=response['archiveId'],
-                                          location=response['location'],
-                                          size=archive_size,
-                                          checksum=response['checksum'],
-                                          timestamp=datetime.now())
-                except Exception as e:
-                    logger.error(e)
-                finally:
-                    os.remove(archive)
+                if not DRY_RUN:
+                    try:
+                        glacier = Glacier(vault_name=vault)
+                        if (archive_size < multipart_threshold):
+                            response = glacier.do_upload(archive=archive,
+                                            archive_description=archive_description)
+                        else:
+                            response = glacier.do_multipart_upload(archive=archive,
+                                            archive_description=archive_description,
+                                                      part_size=part_size)
+                        logger.info('Response: {response}'.format(response=response))
+                        gdb.add_upload_record(package=dir_name,
+                                              identifier=response['archiveId'],
+                                              location=response['location'],
+                                              size=archive_size,
+                                              checksum=response['checksum'],
+                                              timestamp=datetime.now())
+                    except Exception as e:
+                        logger.error(e)
+                    finally:
+                        os.remove(archive)
+            except OSError as e:
+                logger.ERROR(e)
+
         else:
             logger.debug('Skipping directory {}'.format(dir_name))
     lock.release()
