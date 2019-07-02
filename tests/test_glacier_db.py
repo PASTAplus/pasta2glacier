@@ -11,18 +11,15 @@
 :Created:
     1/15/17
 """
-
-import unittest
 from datetime import datetime
-from sqlalchemy.exc import IntegrityError
-import logging
+import unittest
 
-logging.basicConfig(format='%(asctime)s %(levelname)s (%(name)s): %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S%z')
-logging.getLogger('').setLevel(logging.WARN)
-logger = logging.getLogger('test_glacier_db')
+import daiquiri
+from sqlalchemy.exc import IntegrityError
 
 from glacier_db import GlacierDb
+
+logger = daiquiri.getLogger('test_glacier_db.py: ' + __name__)
 
 
 class TestDatabase(unittest.TestCase):

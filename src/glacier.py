@@ -12,15 +12,12 @@
 :Created:
     1/16/17
 """
-
-import logging
-
 import boto3
 from botocore import utils
 from boto3.exceptions import Boto3Error
+import daiquiri
 
-
-logger = logging.getLogger('glacier')
+logger = daiquiri.getLogger('glacier.py: ' + __name__)
 
 
 class Glacier(object):

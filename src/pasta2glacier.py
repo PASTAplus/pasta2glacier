@@ -14,26 +14,28 @@
     1/15/17
 """
 
-import os
-import shutil
 from datetime import datetime
 import logging
+import os
+import shutil
 import sys
 
 from boto3.exceptions import Boto3Error
+import daiquiri
 from docopt import docopt
 
 from glacier_db import GlacierDb
 from glacier import Glacier
-
 from lock import Lock
 
-logging.basicConfig(format='%(asctime)s %(levelname)s (%(name)s): %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S%z',
-                    #filename='p2g.log',
-                    level=logging.INFO)
+log_file = 'p2g.log'
+daiquiri.setup(level=logging.INFO,
+               outputs=(
+                   'stderr',
+                   daiquiri.output.File(filename=f'{log_file}')
+                ))
+logger = daiquiri.getLogger('pasta2glacier.py: ' + __name__)
 
-logger = logging.getLogger('pasta2glacier')
 
 
 def data_directories(path=None):

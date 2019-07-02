@@ -16,13 +16,13 @@
 import os
 import logging
 
+import daiquiri
 from sqlalchemy import Column, Integer, Float, String, Date, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-
 Base = declarative_base()
-logger = logging.getLogger('glacier_db')
+logger = daiquiri.getLogger('glacier_db.py: ' + __name__)
 
 
 class GlacierUploadLog(Base):

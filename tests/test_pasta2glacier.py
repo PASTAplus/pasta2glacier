@@ -11,16 +11,13 @@
 :Created:
     1/15/17
 """
-
 import unittest
-import logging
+
+import daiquiri
 
 import pasta2glacier
 
-logging.basicConfig(format='%(asctime)s %(levelname)s (%(name)s): %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S%z')
-logging.getLogger('').setLevel(logging.WARN)
-logger = logging.getLogger('test_pasta2glacier')
+logger = daiquiri.getLogger('test_pasta2glacier.py: ' + __name__)
 
 
 class TestGetDataDirectories(unittest.TestCase):

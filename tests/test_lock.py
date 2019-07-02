@@ -11,15 +11,13 @@
 :Created:
     3/31/17
 """
-
-import logging
-
-logger = logging.getLogger('test_lock')
-
-import unittest
 import os
 import sys
+import unittest
 
+import daiquiri
+
+logger = daiquiri.getLogger('test_lock.py: ' + __name__)
 sys.path.insert(0, os.path.abspath('../src'))
 
 from lock import Lock
