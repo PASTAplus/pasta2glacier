@@ -21,8 +21,8 @@ import shutil
 import sys
 
 from boto3.exceptions import Boto3Error
+import click
 import daiquiri
-from docopt import docopt
 
 from glacier_db import GlacierDb
 from glacier import Glacier
@@ -53,40 +53,33 @@ def mock_response():
     return r
 
 
-def main(argv):
+help_dryrun = 'Dry run only - no AWS Glacier upload'
+help_limit = 'Limit upload to \'n\' archives'
+help_work = 'Working directory path'
+help_lock = 'Location of lock file'
+
+@click.command()
+@click.argument('vault')
+@click.argument('data_path')
+@click.option('-d', '--dryrun', default=False, is_flag=True, help=help_dryrun)
+@click.option('-l', '--limit', default=None, type=int, help=help_limit)
+@click.option('--workdir', default='/tmp', type=str, help=help_work)
+@click.option('--lockfile', default='/tmp/glacier.lock', type=str, help=help_lock)
+def main(vault: str, data_path: str, dryrun: bool, limit: int, workdir: str,
+         lockfile: str):
     """
     pasta2glacier provides a mechanism to upload archived (zip or tar) data
     packages from the PASTA data repository into Amazon's AWS Glacier storage.
 
-    Usage:
-        pasta2glacier.py <vault> <data_path> [-d | --dry] [-l | --limit <n>]
-        pasta2glacier.py (-h | --help)
-        
-    Arguments:
-        vault       The AWS Glacier vault to be used (e.g. "PASTA_Test")
-        data_path   The file system path to the local data directory
-
-    Options:
-        -h --help         This page
-        -d --dry          Dry run only - no AWS Glacier upload
-        -l --limit <n>    Limit upload to 'n' archives
-        
+    \b
+    vault       The AWS Glacier vault to be used (e.g. "PASTA_Test")
+    data_path   The file system path to the local data directory
     """
-
-    args = docopt(str(main.__doc__))
-    DRY_RUN = args['--dry']
-    vault = args['<vault>']
-    data_path = args['<data_path>']
-
-    if len(args['--limit']) == 1:
-        limit = int(args['--limit'][0])
-    else:
-        limit = None
 
     multipart_threshold = (1024 ** 2) * 99  #99MB
     part_size = (1024**2) * (2**4)
 
-    lock = Lock('/tmp/glacier.lock')
+    lock = Lock(lockfile)
     if lock.locked:
         logger.error('Lock file {} exists, exiting...'.format(lock.lock_file))
         return 1
@@ -99,6 +92,7 @@ def main(argv):
 
     dirs = len(data_directories(data_path))
     cnt = 1
+
     for dir_name in data_directories(data_path):
 
         logger.debug('Directory {cnt} of {dirs}: {dir_name}'.format(cnt=cnt,
@@ -115,22 +109,25 @@ def main(argv):
             logger.info(f'Create archive: {dir_name}.tar.gz')
 
             try:
-                os.chdir('/home/servilla/tmp')
-                archive = shutil.make_archive(base_name=dir_name, format='gztar',
-                                              base_dir=dir_name, root_dir=data_path)
+                os.chdir(workdir)
+                archive = shutil.make_archive(base_name=dir_name,
+                                              format='gztar',
+                                              base_dir=dir_name,
+                                              root_dir=data_path,
+                                              dry_run=dryrun)
                 archive_size = os.path.getsize(archive)
                 archive_description = f'{dir_name}'
 
-                if not DRY_RUN:
+                if not dryrun:
                     try:
                         glacier = Glacier(vault_name=vault)
-                        if (archive_size < multipart_threshold):
+                        if archive_size < multipart_threshold:
                             response = glacier.do_upload(archive=archive,
-                                            archive_description=archive_description)
+                                    archive_description=archive_description)
                         else:
                             response = glacier.do_multipart_upload(archive=archive,
-                                            archive_description=archive_description,
-                                                      part_size=part_size)
+                                        archive_description=archive_description,
+                                        part_size=part_size)
                         logger.info('Response: {response}'.format(response=response))
                         gdb.add_upload_record(package=dir_name,
                                               identifier=response['archiveId'],
@@ -153,4 +150,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()
