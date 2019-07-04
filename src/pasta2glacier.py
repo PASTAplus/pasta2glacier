@@ -113,7 +113,8 @@ def main(vault: str, data_path: str, dryrun: bool, noclean: bool, limit: int,
             logger.debug('Directory {cnt} of {dirs}: {dir_name}'.format(cnt=cnt,
                          dirs=dirs, dir_name=dir_name))
             cnt += 1
-            if not gdb.package_exists(dir_name) and not dir_name in ignore_pids:
+
+            if not gdb.package_exists(dir_name) and dir_name not in ignore_pids:
 
                 if limit is not None:
                     if limit > 0:
@@ -121,13 +122,17 @@ def main(vault: str, data_path: str, dryrun: bool, noclean: bool, limit: int,
                     else:
                         break
 
-                logger.info(f'Create archive: {dir_name}.tar.gz')
-
-                archive = shutil.make_archive(base_name=dir_name,
-                                              format='gztar',
-                                              base_dir=dir_name,
-                                              root_dir=data_path,
-                                              dry_run=dryrun)
+                archive = f'{dir_name}.tar.gz'
+                if os.path.exists(archive):
+                    msg = f'Archive file {archive} exists, will use instead of creating new archive'
+                    logger.info(msg)
+                else:
+                    logger.info(f'Create archive: {archive}')
+                    archive = shutil.make_archive(base_name=dir_name,
+                                                  format='gztar',
+                                                  base_dir=dir_name,
+                                                  root_dir=data_path,
+                                                  dry_run=dryrun)
                 archive_size = os.path.getsize(archive)
                 archive_description = f'{dir_name}'
 
