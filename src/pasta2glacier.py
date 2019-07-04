@@ -63,6 +63,7 @@ def mock_response():
 
 help_dryrun = 'Dry run only - no AWS Glacier upload'
 help_noclean = 'Do not remove tarballs after archiving'
+help_force = 'Force creation of archives even if they already exist'
 help_limit = 'Limit upload to \'n\' archives'
 help_ignore = 'File containing package identifiers to ignore one per line'
 help_work = 'Working directory path'
@@ -73,12 +74,13 @@ help_lock = 'Location of lock file'
 @click.argument('data_path')
 @click.option('-d', '--dryrun', default=False, is_flag=True, help=help_dryrun)
 @click.option('-n', '--noclean', default=False, is_flag=True, help=help_noclean)
+@click.option('-f',  '--force', default=False, is_flag=True, help=help_force)
 @click.option('--limit', default=None, type=int, help=help_limit)
 @click.option('--ignore', default=None, type=str, help=help_ignore)
 @click.option('--workdir', default='/tmp', type=str, help=help_work)
 @click.option('--lockfile', default='/tmp/glacier.lock', type=str, help=help_lock)
-def main(vault: str, data_path: str, dryrun: bool, noclean: bool, limit: int,
-         ignore: str, workdir: str, lockfile: str):
+def main(vault: str, data_path: str, dryrun: bool, noclean: bool, force: bool,
+         limit: int, ignore: str, workdir: str, lockfile: str):
     """
     pasta2glacier provides a mechanism to upload archived (zip or tar) data
     packages from the PASTA data repository into Amazon's AWS Glacier storage.
@@ -123,7 +125,7 @@ def main(vault: str, data_path: str, dryrun: bool, noclean: bool, limit: int,
                         break
 
                 archive = f'{dir_name}.tar.gz'
-                if os.path.exists(archive):
+                if os.path.exists(archive) and not force:
                     msg = f'Archive file {archive} exists, will use instead of creating new archive'
                     logger.info(msg)
                 else:
