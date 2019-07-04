@@ -45,16 +45,26 @@ def data_directories(path=None):
         raise IOError(err_msg)
 
 
+def ignores(ignore_file: str) -> list:
+    pids = list()
+    if ignore_file is not None:
+        with open(ignore_file, 'r') as f:
+            pids = [_.strip() for _ in f.readlines()]
+    return pids
+
+
 def mock_response():
-    r = {}
-    r['archiveId'] = '2bf5l58c52IXU67qovKRk49Np5vYACZELD4rhWOL86kIi3-ncU-WM-v7hG8l9TuTiT12xmiloa67WsMUGdrxOKVejKdFYA5F7Ksmdlifq_gARt6a7rwR5oFDl5jyH3ACjGh8P83eBg'
-    r['location'] = '/321492031925/vaults/PASTA_Test/archives/2bf5l58c52IXU67qovKRk49Np5vYACZELD4rhWOL86kIi3-ncU-WM-v7hG8l9TuTiT12xmiloa67WsMUGdrxOKVejKdFYA5F7Ksmdlifq_gARt6a7rwR5oFDl5jyH3ACjGh8P83eBg'
-    r['checksum'] = '226cb0468dcda728f80bd5807e6483cbbb191b5f9e7cb0b61fd51c11acb30d01'
+    r = {
+        'archiveId': '2bf5l58c52IXU67qovKRk49Np5vYACZELD4rhWOL86kIi3-ncU-WM-v7hG8l9TuTiT12xmiloa67WsMUGdrxOKVejKdFYA5F7Ksmdlifq_gARt6a7rwR5oFDl5jyH3ACjGh8P83eBg',
+        'location': '/321492031925/vaults/PASTA_Test/archives/2bf5l58c52IXU67qovKRk49Np5vYACZELD4rhWOL86kIi3-ncU-WM-v7hG8l9TuTiT12xmiloa67WsMUGdrxOKVejKdFYA5F7Ksmdlifq_gARt6a7rwR5oFDl5jyH3ACjGh8P83eBg',
+        'checksum': '226cb0468dcda728f80bd5807e6483cbbb191b5f9e7cb0b61fd51c11acb30d01'}
     return r
 
 
 help_dryrun = 'Dry run only - no AWS Glacier upload'
+help_noclean = 'Do not remove tarballs after archiving'
 help_limit = 'Limit upload to \'n\' archives'
+help_ignore = 'File containing package identifiers to ignore one per line'
 help_work = 'Working directory path'
 help_lock = 'Location of lock file'
 
@@ -62,11 +72,13 @@ help_lock = 'Location of lock file'
 @click.argument('vault')
 @click.argument('data_path')
 @click.option('-d', '--dryrun', default=False, is_flag=True, help=help_dryrun)
-@click.option('-l', '--limit', default=None, type=int, help=help_limit)
+@click.option('-n', '--noclean', default=False, is_flag=True, help=help_noclean)
+@click.option('--limit', default=None, type=int, help=help_limit)
+@click.option('--ignore', default=None, type=str, help=help_ignore)
 @click.option('--workdir', default='/tmp', type=str, help=help_work)
 @click.option('--lockfile', default='/tmp/glacier.lock', type=str, help=help_lock)
-def main(vault: str, data_path: str, dryrun: bool, limit: int, workdir: str,
-         lockfile: str):
+def main(vault: str, data_path: str, dryrun: bool, noclean: bool, limit: int,
+         ignore: str, workdir: str, lockfile: str):
     """
     pasta2glacier provides a mechanism to upload archived (zip or tar) data
     packages from the PASTA data repository into Amazon's AWS Glacier storage.
@@ -76,8 +88,8 @@ def main(vault: str, data_path: str, dryrun: bool, limit: int, workdir: str,
     data_path   The file system path to the local data directory
     """
 
-    multipart_threshold = (1024 ** 2) * 99  #99MB
-    part_size = (1024**2) * (2**4)
+    multipart_threshold = (1024**2) * (2**10)  # 1GB
+    part_size = (1024**2) * (2**10)  # 1GB
 
     lock = Lock(lockfile)
     if lock.locked:
@@ -93,23 +105,24 @@ def main(vault: str, data_path: str, dryrun: bool, limit: int, workdir: str,
     dirs = len(data_directories(data_path))
     cnt = 1
 
-    for dir_name in data_directories(data_path):
+    try:
+        ignore_pids = ignores(ignore)
+        os.chdir(workdir)
+        for dir_name in data_directories(data_path):
 
-        logger.debug('Directory {cnt} of {dirs}: {dir_name}'.format(cnt=cnt,
-                     dirs=dirs, dir_name=dir_name))
-        cnt += 1
-        if not gdb.package_exists(dir_name):
+            logger.debug('Directory {cnt} of {dirs}: {dir_name}'.format(cnt=cnt,
+                         dirs=dirs, dir_name=dir_name))
+            cnt += 1
+            if not gdb.package_exists(dir_name) and not dir_name in ignore_pids:
 
-            if limit is not None:
-                if limit > 0:
-                    limit -= 1
-                else:
-                    break
+                if limit is not None:
+                    if limit > 0:
+                        limit -= 1
+                    else:
+                        break
 
-            logger.info(f'Create archive: {dir_name}.tar.gz')
+                logger.info(f'Create archive: {dir_name}.tar.gz')
 
-            try:
-                os.chdir(workdir)
                 archive = shutil.make_archive(base_name=dir_name,
                                               format='gztar',
                                               base_dir=dir_name,
@@ -138,14 +151,16 @@ def main(vault: str, data_path: str, dryrun: bool, limit: int, workdir: str,
                     except Exception as e:
                         logger.error(e)
                     finally:
-                        os.remove(archive)
-            except OSError as e:
-                logger.ERROR(e)
+                        if not noclean:
+                            os.remove(archive)
 
-        else:
-            logger.debug('Skipping directory {}'.format(dir_name))
-    lock.release()
-    logger.info('Lock file {} released'.format(lock.lock_file))
+            else:
+                logger.debug('Skipping directory {}'.format(dir_name))
+    except Exception as e:
+        logger.ERROR(e)
+    finally:
+        lock.release()
+        logger.info('Lock file {} released'.format(lock.lock_file))
     return 0
 
 
