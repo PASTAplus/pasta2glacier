@@ -40,6 +40,7 @@ The main module for execution is "pasta2glacier". Command line usage follows:
     Options:
       -d, --dryrun     Dry run only - no AWS Glacier upload
       -n, --noclean    Do not remove tarballs after archiving
+      -f, --force      Force creation of archives even if they already exist
       --limit INTEGER  Limit upload to 'n' archives
       --ignore TEXT    File containing package identifiers to ignore one per line
       --workdir TEXT   Working directory path
