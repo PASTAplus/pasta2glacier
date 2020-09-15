@@ -29,7 +29,6 @@ class TestDatabase(unittest.TestCase):
         self.gdb = GlacierDb(db_name)
         self.gdb.connect_glacier_upload_log_db()
 
-
     def tearDown(self):
         self.gdb.delete_glacier_upload_log_db()
         pass
@@ -50,7 +49,6 @@ class TestDatabase(unittest.TestCase):
             size=89234,
             checksum='3243A12FD23',
             timestamp=datetime.now())
-
 
     def test_record_collision(self):
         self.gdb.add_upload_record(
