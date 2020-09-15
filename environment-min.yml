@@ -1,0 +1,14 @@
+name: glacier
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.8
+  - botocore
+  - boto3
+  - sqlalchemy
+  - click
+  - awscli
+  - daiquiri
+  - sqlite
+prefix: /home/servilla/anaconda3/envs/glacier
