@@ -73,13 +73,21 @@ class GlacierDb(object):
         self.session.add(record)
         self.session.commit()
 
+    def get_record_by_package(self, package):
+        record = (
+            self.session.query(GlacierUploadLog)
+            .filter(GlacierUploadLog.package == package)
+            .one_or_none()
+        )
+        return record
+
     def package_exists(self, package=None):
         record = (
             self.session.query(GlacierUploadLog)
             .filter(GlacierUploadLog.package == package)
             .one_or_none()
         )
-        if record:
+        if record is not None:
             return True
         else:
             return False
