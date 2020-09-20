@@ -56,3 +56,4 @@ db
 archive
 *.log
 ignore.txt
+config.py
