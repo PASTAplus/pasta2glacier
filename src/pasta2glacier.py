@@ -24,6 +24,7 @@ from boto3.exceptions import Boto3Error
 import click
 import daiquiri
 
+from config import Config
 from glacier_db import GlacierDb
 from glacier import Glacier
 from lock import Lock
@@ -113,8 +114,7 @@ def main(
         lock.acquire()
         logger.info("Lock file {} acquired".format(lock.lock_file))
 
-    gdb = GlacierDb("glacier_upload_log.sqlite")
-    gdb.connect_glacier_upload_log_db()
+    gdb = GlacierDb(Config.DB)
 
     dirs = len(data_directories(data_path))
     cnt = 1

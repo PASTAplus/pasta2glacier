@@ -37,19 +37,14 @@ class GlacierUploadLog(Base):
 
 
 class GlacierDb(object):
-    def __init__(self, db_name="glacier_upload_log.sqlite"):
-        self.db_name = db_name
 
-    def connect_glacier_upload_log_db(self):
+    def __init__(self, db_name):
         from sqlalchemy import create_engine
-
+        self.db_name = db_name
         engine = create_engine("sqlite:///" + self.db_name)
         Base.metadata.create_all(engine)
         Session = sessionmaker(bind=engine)
         self.session = Session()
-
-    def delete_glacier_upload_log_db(self):
-        os.remove(self.db_name)
 
     def add_upload_record(
         self,
