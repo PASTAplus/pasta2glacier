@@ -10,5 +10,7 @@ dependencies:
   - click
   - awscli
   - daiquiri
-  - sqlite
+  - black
+  - ipython
+  - pytest
 prefix: /home/servilla/anaconda3/envs/glacier
