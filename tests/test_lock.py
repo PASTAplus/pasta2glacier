@@ -11,42 +11,38 @@
 :Created:
     3/31/17
 """
-import os
-import sys
-import unittest
+from pathlib import Path
+import re
 
 import daiquiri
-
-logger = daiquiri.getLogger('test_lock.py: ' + __name__)
-sys.path.insert(0, os.path.abspath('../src'))
 
 from lock import Lock
 
 
-class TestLock(unittest.TestCase):
-
-    def setUp(self):
-        self.lock = Lock('bozo.lock')
-
-    def tearDown(self):
-        try:
-            self.lock.release()
-        except IOError as e:
-            logger.error(e)
-
-    def test_acquire_release(self):
-        print(self.lock.acquire())
-        try:
-            self.lock.release()
-        except IOError as e:
-            logger.error(e)
-            self.fail()
-        pass
-
-    def test_locked(self):
-        self.lock.acquire()
-        self.assertTrue(self.lock.locked)
+logger = daiquiri.getLogger('test_lock.py: ' + __name__)
 
 
-if __name__ == '__main__':
-    unittest.main()
+def test_lock_construction_no_name():
+    lock_file = re.compile(r'(\D){10}.lock')
+    lock = Lock()
+    fn = lock.lock_file
+    match = lock_file.match(fn)
+    assert(match is not None)
+
+
+def test_lock_construction_with_name():
+    lock = Lock('bozo.lock')
+    fn = lock.lock_file
+    assert(fn == 'bozo.lock')
+
+
+def test_lock_acquire_release():
+    lock = Lock()
+    fn = lock.lock_file
+    lock.acquire()
+    lock_exists = Path(fn).exists()
+    assert lock_exists
+    lock.release()
+    lock_exists = Path(fn).exists()
+    assert not lock_exists
+    Path(fn).unlink(missing_ok=True)
