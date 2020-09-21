@@ -20,8 +20,8 @@ from sqlalchemy.exc import IntegrityError
 
 from glacier_db import GlacierDb
 
-logger = daiquiri.getLogger('test_glacier_db.py: ' + __name__)
-DB = 'glacier_upload_log_test.sqlite'
+logger = daiquiri.getLogger("test_glacier_db.py: " + __name__)
+DB = "glacier_upload_log_test.sqlite"
 
 
 @pytest.fixture()
@@ -37,71 +37,116 @@ def cleanup():
 
 def test_add_records(gdb, cleanup):
     gdb.add_upload_record(
-        package='knb-lter-nin.1.1',
-        identifier='2034saf0923',
-        location='https://aws/glacier/2034saf0923',
+        package="knb-lter-nin.1.1",
+        identifier="2034saf0923",
+        location="https://aws/glacier/2034saf0923",
         size=734563,
-        checksum='AB9F90234E234D',
-        timestamp=datetime.now())
+        checksum="AB9F90234E234D",
+        timestamp=datetime.now(),
+    )
 
     gdb.add_upload_record(
-        package='knb-lter-nin.2.1',
-        identifier='823lkas09234',
-        location='https://aws/glacier/823lkas09234',
+        package="knb-lter-nin.2.1",
+        identifier="823lkas09234",
+        location="https://aws/glacier/823lkas09234",
         size=89234,
-        checksum='3243A12FD23',
-        timestamp=datetime.now())
+        checksum="3243A12FD23",
+        timestamp=datetime.now(),
+    )
 
 
 def test_record_collision(gdb, cleanup):
     gdb.add_upload_record(
-        package='knb-lter-nin.1.1',
-        identifier='2034saf0923',
-        location='https://aws/glacier/2034saf0923',
+        package="knb-lter-nin.1.1",
+        identifier="2034saf0923",
+        location="https://aws/glacier/2034saf0923",
         size=734563,
-        checksum='AB9F90234E234D',
-        timestamp=datetime.now())
+        checksum="AB9F90234E234D",
+        timestamp=datetime.now(),
+    )
 
     with pytest.raises(IntegrityError):
         gdb.add_upload_record(
-            package='knb-lter-nin.1.1',
-            identifier='2034saf0923',
-            location='https://aws/glacier/2034saf0923',
-            size='734563',
-            checksum='AB9F90234E234D',
-            timestamp=datetime.now()
+            package="knb-lter-nin.1.1",
+            identifier="2034saf0923",
+            location="https://aws/glacier/2034saf0923",
+            size="734563",
+            checksum="AB9F90234E234D",
+            timestamp=datetime.now(),
         )
 
 
 def test_package_exists(gdb, cleanup):
     gdb.add_upload_record(
-        package='knb-lter-nin.1.1',
-        identifier='2034saf0923',
-        location='https://aws/glacier/2034saf0923',
+        package="knb-lter-nin.1.1",
+        identifier="2034saf0923",
+        location="https://aws/glacier/2034saf0923",
         size=734563,
-        checksum='AB9F90234E234D',
-        timestamp=datetime.now())
+        checksum="AB9F90234E234D",
+        timestamp=datetime.now(),
+    )
 
     gdb.add_upload_record(
-        package='knb-lter-nin.2.1',
-        identifier='823lkas09234',
-        location='https://aws/glacier/823lkas09234',
+        package="knb-lter-nin.2.1",
+        identifier="823lkas09234",
+        location="https://aws/glacier/823lkas09234",
         size=89234,
-        checksum='3243A12FD23',
-        timestamp=datetime.now())
+        checksum="3243A12FD23",
+        timestamp=datetime.now(),
+    )
 
     gdb.add_upload_record(
-        package='knb-lter-nin.3.1',
-        identifier='ljd92ls2klj',
-        location='https://aws/glacier/ljd92ls2klj',
+        package="knb-lter-nin.3.1",
+        identifier="ljd92ls2klj",
+        location="https://aws/glacier/ljd92ls2klj",
         size=92348,
-        checksum='345B03E223F',
-        timestamp=datetime.now())
+        checksum="345B03E223F",
+        timestamp=datetime.now(),
+    )
 
     # Test for existing package
-    exists = gdb.package_exists(package='knb-lter-nin.3.1')
+    exists = gdb.package_exists(package="knb-lter-nin.3.1")
     assert exists
 
     # Test for non-existing package
-    exists = gdb.package_exists(package='knb-lter-non.3.1')
+    exists = gdb.package_exists(package="knb-lter-non.3.1")
     assert not exists
+
+
+def test_get_record(gdb, cleanup):
+    timestamp = datetime.now()
+
+    gdb.add_upload_record(
+        package="knb-lter-nin.1.1",
+        identifier="2034saf0923",
+        location="https://aws/glacier/2034saf0923",
+        size=734563,
+        checksum="AB9F90234E234D",
+        timestamp=timestamp,
+    )
+
+    gdb.add_upload_record(
+        package="knb-lter-nin.2.1",
+        identifier="823lkas09234",
+        location="https://aws/glacier/823lkas09234",
+        size=89234,
+        checksum="3243A12FD23",
+        timestamp=timestamp,
+    )
+
+    gdb.add_upload_record(
+        package="knb-lter-nin.3.1",
+        identifier="ljd92ls2klj",
+        location="https://aws/glacier/ljd92ls2klj",
+        size=92348,
+        checksum="345B03E223F",
+        timestamp=timestamp,
+    )
+
+    record = gdb.get_record_by_package("knb-lter-nin.2.1")
+    assert record.package == "knb-lter-nin.2.1"
+    assert record.identifier == "823lkas09234"
+    assert record.location == "https://aws/glacier/823lkas09234"
+    assert record.size == 89234
+    assert record.checksum == "3243A12FD23"
+    assert record.timestamp == timestamp
