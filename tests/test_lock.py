@@ -30,7 +30,7 @@ def test_lock_construction_no_name():
     assert(match is not None)
 
 
-def test_lock_construction_with_name():
+def test_lock_construction_name():
     lock = Lock('bozo.lock')
     fn = lock.lock_file
     assert(fn == 'bozo.lock')
