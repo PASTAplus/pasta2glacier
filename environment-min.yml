@@ -8,9 +8,7 @@ dependencies:
   - boto3
   - sqlalchemy
   - click
-  - awscli
   - daiquiri
-  - black
-  - ipython
   - pytest
+  - cryptography=3.2.1
 prefix: /home/servilla/anaconda3/envs/glacier
