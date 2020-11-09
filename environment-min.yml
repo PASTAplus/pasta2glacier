@@ -1,7 +1,7 @@
 name: glacier
 channels:
-  - defaults
   - conda-forge
+  - defaults
 dependencies:
   - python=3.8
   - botocore
@@ -10,5 +10,5 @@ dependencies:
   - click
   - daiquiri
   - pytest
-  - cryptography=3.2.1
+  - cryptography
 prefix: /home/servilla/anaconda3/envs/glacier
