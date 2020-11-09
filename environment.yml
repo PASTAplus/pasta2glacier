@@ -6,8 +6,8 @@ dependencies:
   - _libgcc_mutex=0.1
   - _openmp_mutex=4.5
   - attrs=20.2.0
-  - boto3=1.16.9
-  - botocore=1.19.9
+  - boto3=1.16.12
+  - botocore=1.19.13
   - brotlipy=0.7.0
   - ca-certificates=2020.6.20
   - certifi=2020.6.20
@@ -15,12 +15,11 @@ dependencies:
   - click=7.1.2
   - cryptography=3.2.1
   - daiquiri=2.1.1
-  - docutils=0.15.2
   - idna=2.10
   - iniconfig=1.1.1
   - jmespath=0.10.0
   - ld_impl_linux-64=2.35
-  - libffi=3.3
+  - libffi=3.2.1
   - libgcc-ng=9.3.0
   - libgomp=9.3.0
   - libstdcxx-ng=9.3.0
@@ -35,8 +34,8 @@ dependencies:
   - pyopenssl=19.1.0
   - pyparsing=2.4.7
   - pysocks=1.7.1
-  - pytest=6.1.1
-  - python=3.8.5
+  - pytest=6.1.2
+  - python=3.8.6
   - python-dateutil=2.8.1
   - python-json-logger=2.0.1
   - python_abi=3.8
