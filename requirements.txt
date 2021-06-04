@@ -2,7 +2,7 @@ attrs==20.3.0
 boto3==1.17.49
 botocore==1.20.49
 brotlipy==0.7.0
-certifi==2020.12.5
+certifi==2021.5.30
 cffi==1.14.5
 click==7.1.2
 cryptography==3.4.7
@@ -24,9 +24,9 @@ pytest==6.2.3
 python-dateutil==2.8.1
 python-json-logger==2.0.1
 s3transfer==0.3.6
-setuptools==49.6.0
+setuptools==49.6.0.post20210108
 six==1.15.0
 SQLAlchemy==1.4.7
 toml==0.10.2
-urllib3==1.26.4
+urllib3==1.26.5
 wheel==0.36.2
