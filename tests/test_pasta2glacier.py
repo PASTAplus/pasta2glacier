@@ -12,14 +12,13 @@
     1/15/17
 """
 import daiquiri
-import pytest
 
+from config import Config
 import pasta2glacier
 
 logger = daiquiri.getLogger('test_pasta2glacier.py: ' + __name__)
 
 
 def test_directory_listing():
-    data_path = '../data'
-    dir_names = pasta2glacier.data_directories(path=data_path)
+    dir_names = pasta2glacier.data_directories(path=Config.DATA_PATH)
     assert dir_names is not None
