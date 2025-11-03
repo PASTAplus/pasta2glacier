@@ -14,7 +14,7 @@ hyperframe==6.1.0
 iniconfig==2.3.0
 jmespath==1.0.1
 packaging==25.0
-pip==25.2
+pip==25.3
 pluggy==1.6.0
 pycparser==2.22
 Pygments==2.19.2
